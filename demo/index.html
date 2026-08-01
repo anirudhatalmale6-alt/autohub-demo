@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AutoHub — Find your next car</title>
+<style>
+  :root{
+    --bg:#f4f6f9; --card:#fff; --ink:#12203a; --muted:#66768f; --line:#e3e8f0;
+    --brand:#1667e6; --brand-dark:#0f4fb5; --accent:#ff7a1a; --ok:#1a9d5a;
+    --shadow:0 1px 3px rgba(18,32,58,.08),0 6px 20px rgba(18,32,58,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  a{color:inherit;text-decoration:none}
+  header{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid var(--line)}
+  .bar{max-width:1240px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:18px}
+  .logo{font-weight:800;font-size:22px;letter-spacing:-.5px}
+  .logo span{color:var(--brand)}
+  .nav{margin-left:auto;display:flex;gap:22px;color:var(--muted);font-weight:600;font-size:14px}
+  .nav a:hover{color:var(--brand)}
+  .adminlink{background:var(--brand);color:#fff;padding:8px 14px;border-radius:8px}
+  .adminlink:hover{background:var(--brand-dark);color:#fff}
+
+  .wrap{max-width:1240px;margin:0 auto;padding:22px 20px;display:grid;grid-template-columns:280px 1fr;gap:22px}
+  .filters{position:sticky;top:74px;align-self:start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow)}
+  .filters h3{margin:0 0 4px;font-size:15px}
+  .fcount{color:var(--muted);font-size:12px;margin-bottom:14px}
+  .fgroup{margin-bottom:16px}
+  .fgroup label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:6px}
+  select,input[type=number]{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:9px;font-size:14px;background:#fff;color:var(--ink)}
+  select:focus,input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(22,103,230,.12)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:6px 12px;font-size:13px;cursor:pointer;user-select:none;transition:.12s}
+  .chip:hover{border-color:var(--brand)}
+  .chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+  .reset{width:100%;margin-top:4px;padding:9px;border:1px solid var(--line);background:#fff;border-radius:9px;font-weight:600;cursor:pointer;color:var(--muted)}
+  .reset:hover{border-color:var(--brand);color:var(--brand)}
+
+  .toolbar{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .toolbar .count{font-size:20px;font-weight:800}
+  .toolbar .count small{color:var(--muted);font-weight:600;font-size:14px}
+  .sort{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+  .sort select{width:auto}
+  .search{flex:1;max-width:320px}
+  .search input{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:9px;font-size:14px}
+
+  .list{display:flex;flex-direction:column;gap:14px}
+  .card{display:grid;grid-template-columns:300px 1fr;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);transition:transform .12s,box-shadow .12s}
+  .card:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(18,32,58,.12)}
+  .gal{position:relative;background:#0d1626;aspect-ratio:4/3}
+  .gal img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0;opacity:0;transition:opacity .35s}
+  .gal img.show{opacity:1}
+  .gal .arrow{position:absolute;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;opacity:0;transition:.15s;z-index:2}
+  .card:hover .arrow{opacity:1}
+  .gal .arrow:hover{background:rgba(0,0,0,.75)}
+  .gal .prev{left:8px}.gal .next{right:8px}
+  .dots{position:absolute;bottom:8px;left:0;right:0;display:flex;justify-content:center;gap:5px;z-index:2}
+  .dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.55)}
+  .dots i.on{background:#fff;width:16px;border-radius:4px}
+  .fuelbadge{position:absolute;top:10px;left:10px;background:rgba(255,255,255,.92);color:var(--ink);font-size:11px;font-weight:700;padding:4px 9px;border-radius:20px;z-index:2}
+  .fuelbadge.ev{background:var(--ok);color:#fff}
+
+  .cbody{padding:16px 18px;display:flex;flex-direction:column}
+  .cbody h2{margin:0;font-size:18px;font-weight:800}
+  .csub{color:var(--muted);font-size:13px;margin:2px 0 12px}
+  .specs{display:flex;flex-wrap:wrap;gap:8px 16px;margin-bottom:12px}
+  .spec{font-size:13px;color:#2b3a52;display:flex;align-items:center;gap:6px}
+  .spec b{font-weight:700}
+  .feat{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+  .feat span{font-size:11px;background:#eef3fb;color:#33517d;padding:3px 9px;border-radius:6px}
+  .cprice{margin-left:auto;text-align:right}
+  .price{font-size:22px;font-weight:800;color:var(--ink)}
+  .cfoot{display:flex;align-items:flex-end;gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+  .loc{font-size:12px;color:var(--muted)}
+  .view{margin-left:auto;background:var(--brand);color:#fff;border:none;padding:9px 18px;border-radius:9px;font-weight:700;cursor:pointer}
+  .view:hover{background:var(--brand-dark)}
+
+  .empty{text-align:center;padding:60px 20px;color:var(--muted)}
+  .pager{display:flex;justify-content:center;gap:6px;margin:22px 0}
+  .pager button{min-width:38px;height:38px;border:1px solid var(--line);background:#fff;border-radius:9px;cursor:pointer;font-weight:600}
+  .pager button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .pager button:disabled{opacity:.4;cursor:default}
+  .sknet{display:none}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:24px}
+
+  @media(max-width:900px){
+    .wrap{grid-template-columns:1fr}
+    .filters{position:static}
+    .card{grid-template-columns:1fr}
+    .gal{aspect-ratio:16/9}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="logo">Auto<span>Hub</span></div>
+    <nav class="nav">
+      <a href="#">Buy</a><a href="#">Sell</a><a href="#">Finance</a>
+      <a class="adminlink" href="admin.html">+ Add a car</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- FILTERS -->
+  <aside class="filters">
+    <h3>Filter</h3>
+    <div class="fcount" id="fcount">— cars</div>
+
+    <div class="fgroup">
+      <label>Make</label>
+      <select id="f-make"><option value="">Any make</option></select>
+    </div>
+    <div class="fgroup">
+      <label>Model</label>
+      <select id="f-model"><option value="">Any model</option></select>
+    </div>
+    <div class="fgroup">
+      <label>Price (€)</label>
+      <div class="row2">
+        <input type="number" id="f-pmin" placeholder="Min" min="0" step="500">
+        <input type="number" id="f-pmax" placeholder="Max" min="0" step="500">
+      </div>
+    </div>
+    <div class="fgroup">
+      <label>Year from</label>
+      <select id="f-year"><option value="">Any year</option></select>
+    </div>
+    <div class="fgroup">
+      <label>Max mileage (km)</label>
+      <select id="f-mileage">
+        <option value="">Any</option>
+        <option value="25000">Up to 25,000</option>
+        <option value="50000">Up to 50,000</option>
+        <option value="100000">Up to 100,000</option>
+        <option value="150000">Up to 150,000</option>
+      </select>
+    </div>
+    <div class="fgroup">
+      <label>Fuel type</label>
+      <div class="chips" id="f-fuel">
+        <div class="chip" data-v="Petrol">Petrol</div>
+        <div class="chip" data-v="Diesel">Diesel</div>
+        <div class="chip" data-v="Electric">Electric</div>
+        <div class="chip" data-v="Hybrid">Hybrid</div>
+      </div>
+    </div>
+    <div class="fgroup">
+      <label>Gearbox</label>
+      <div class="chips" id="f-gear">
+        <div class="chip" data-v="Automatic">Automatic</div>
+        <div class="chip" data-v="Manual">Manual</div>
+      </div>
+    </div>
+    <div class="fgroup">
+      <label>Body</label>
+      <div class="chips" id="f-body">
+        <div class="chip" data-v="Sedan">Sedan</div>
+        <div class="chip" data-v="SUV">SUV</div>
+        <div class="chip" data-v="Hatchback">Hatchback</div>
+        <div class="chip" data-v="Estate">Estate</div>
+        <div class="chip" data-v="Coupe">Coupe</div>
+      </div>
+    </div>
+    <button class="reset" id="reset">Reset all filters</button>
+  </aside>
+
+  <!-- RESULTS -->
+  <main>
+    <div class="toolbar">
+      <div class="count"><span id="resCount">0</span> <small>cars found</small></div>
+      <div class="search"><input id="q" placeholder="Search e.g. BMW X5, electric…"></div>
+      <div class="sort">Sort
+        <select id="sort">
+          <option value="rel">Relevance</option>
+          <option value="pl">Price: low to high</option>
+          <option value="ph">Price: high to low</option>
+          <option value="yn">Year: newest</option>
+          <option value="mm">Mileage: lowest</option>
+        </select>
+      </div>
+    </div>
+    <div class="list" id="list"></div>
+    <div class="pager" id="pager"></div>
+  </main>
+</div>
+<footer>AutoHub demo · built for the AutoScout24-style listing platform · instant AJAX-style filtering</footer>
+
+<script>
+const PAGE_SIZE = 12;
+let CARS = [], state = {
+  make:'', model:'', pmin:'', pmax:'', year:'', mileage:'',
+  fuel:new Set(), gear:new Set(), body:new Set(), q:'', sort:'rel', page:1
+};
+const $ = s => document.querySelector(s);
+const euro = n => '€' + n.toLocaleString('en-US');
+const km = n => n.toLocaleString('en-US') + ' km';
+
+fetch('cars.json').then(r=>r.json()).then(data=>{ CARS=data; boot(); });
+
+function boot(){
+  // Make/model/year selects
+  const makes=[...new Set(CARS.map(c=>c.make))].sort();
+  makes.forEach(m=>$('#f-make').add(new Option(m,m)));
+  const years=[...new Set(CARS.map(c=>c.year))].sort((a,b)=>b-a);
+  years.forEach(y=>$('#f-year').add(new Option(y,y)));
+  refreshModels();
+
+  $('#f-make').onchange=e=>{state.make=e.target.value;state.model='';refreshModels();apply();};
+  $('#f-model').onchange=e=>{state.model=e.target.value;apply();};
+  $('#f-year').onchange=e=>{state.year=e.target.value;apply();};
+  $('#f-mileage').onchange=e=>{state.mileage=e.target.value;apply();};
+  $('#f-pmin').oninput=e=>{state.pmin=e.target.value;apply();};
+  $('#f-pmax').oninput=e=>{state.pmax=e.target.value;apply();};
+  $('#q').oninput=e=>{state.q=e.target.value;apply();};
+  $('#sort').onchange=e=>{state.sort=e.target.value;apply();};
+  chipGroup('#f-fuel','fuel'); chipGroup('#f-gear','gear'); chipGroup('#f-body','body');
+  $('#reset').onclick=resetAll;
+  apply();
+}
+function refreshModels(){
+  const sel=$('#f-model'); sel.innerHTML='<option value="">Any model</option>';
+  const pool=state.make?CARS.filter(c=>c.make===state.make):CARS;
+  [...new Set(pool.map(c=>c.model))].sort().forEach(m=>sel.add(new Option(m,m)));
+}
+function chipGroup(sel,key){
+  document.querySelectorAll(sel+' .chip').forEach(ch=>{
+    ch.onclick=()=>{ const v=ch.dataset.v;
+      if(state[key].has(v)){state[key].delete(v);ch.classList.remove('on');}
+      else{state[key].add(v);ch.classList.add('on');}
+      apply();
+    };
+  });
+}
+function resetAll(){
+  state={make:'',model:'',pmin:'',pmax:'',year:'',mileage:'',fuel:new Set(),gear:new Set(),body:new Set(),q:'',sort:'rel',page:1};
+  $('#f-make').value='';$('#f-model').value='';$('#f-year').value='';$('#f-mileage').value='';
+  $('#f-pmin').value='';$('#f-pmax').value='';$('#q').value='';$('#sort').value='rel';
+  document.querySelectorAll('.chip.on').forEach(c=>c.classList.remove('on'));
+  refreshModels(); apply();
+}
+
+function filtered(){
+  let r=CARS.filter(c=>{
+    if(state.make&&c.make!==state.make)return false;
+    if(state.model&&c.model!==state.model)return false;
+    if(state.year&&c.year<+state.year)return false;
+    if(state.pmin&&c.price<+state.pmin)return false;
+    if(state.pmax&&c.price>+state.pmax)return false;
+    if(state.mileage&&c.mileage>+state.mileage)return false;
+    if(state.fuel.size&&!state.fuel.has(c.fuel))return false;
+    if(state.gear.size&&!state.gear.has(c.gearbox))return false;
+    if(state.body.size&&!state.body.has(c.body))return false;
+    if(state.q){const t=(c.make+' '+c.model+' '+c.fuel+' '+c.body+' '+c.color).toLowerCase();
+      if(!state.q.toLowerCase().split(/\s+/).every(w=>t.includes(w)))return false;}
+    return true;
+  });
+  const s=state.sort;
+  if(s==='pl')r.sort((a,b)=>a.price-b.price);
+  else if(s==='ph')r.sort((a,b)=>b.price-a.price);
+  else if(s==='yn')r.sort((a,b)=>b.year-a.year);
+  else if(s==='mm')r.sort((a,b)=>a.mileage-b.mileage);
+  return r;
+}
+
+function apply(){
+  const r=filtered();
+  $('#resCount').textContent=r.length.toLocaleString('en-US');
+  $('#fcount').textContent=r.length.toLocaleString('en-US')+' cars match';
+  const pages=Math.max(1,Math.ceil(r.length/PAGE_SIZE));
+  if(state.page>pages)state.page=1;
+  const slice=r.slice((state.page-1)*PAGE_SIZE,state.page*PAGE_SIZE);
+  render(slice);
+  renderPager(pages);
+}
+
+function render(cars){
+  const list=$('#list');
+  if(!cars.length){list.innerHTML='<div class="empty"><h3>No cars match your filters</h3><p>Try widening your search or resetting filters.</p></div>';return;}
+  list.innerHTML=cars.map(c=>{
+    const ev=c.fuel==='Electric';
+    const imgs=c.photos.map((p,i)=>`<img src="${p}" class="${i===0?'show':''}" loading="lazy" alt="">`).join('');
+    const dots=c.photos.map((_,i)=>`<i class="${i===0?'on':''}"></i>`).join('');
+    const specs=[
+      ['Year',c.year],['Mileage',km(c.mileage)],['Fuel',c.fuel],
+      ['Gearbox',c.gearbox],['Power',c.power+' hp'],['Body',c.body]
+    ].map(s=>`<div class="spec"><b>${s[1]}</b> <span style="color:var(--muted)">${s[0]}</span></div>`).join('');
+    const feats=c.features.slice(0,4).map(f=>`<span>${f}</span>`).join('');
+    return `<article class="card" data-id="${c.id}">
+      <div class="gal" data-n="${c.photos.length}">
+        <span class="fuelbadge ${ev?'ev':''}">${c.fuel}</span>
+        ${imgs}
+        <button class="arrow prev" data-d="-1">‹</button>
+        <button class="arrow next" data-d="1">›</button>
+        <div class="dots">${dots}</div>
+      </div>
+      <div class="cbody">
+        <div style="display:flex;align-items:flex-start">
+          <div>
+            <h2>${c.make} ${c.model}</h2>
+            <div class="csub">${c.color} · ${c.doors} doors · ${c.seats} seats</div>
+          </div>
+          <div class="cprice"><div class="price">${euro(c.price)}</div></div>
+        </div>
+        <div class="specs">${specs}</div>
+        <div class="feat">${feats}</div>
+        <div class="cfoot">
+          <span class="loc">📍 ${c.location}</span>
+          <button class="view">View details</button>
+        </div>
+      </div>
+    </article>`;
+  }).join('');
+  wireCarousels();
+}
+
+function wireCarousels(){
+  document.querySelectorAll('.gal').forEach(g=>{
+    const imgs=[...g.querySelectorAll('img')], dots=[...g.querySelectorAll('.dots i')];
+    let idx=0;
+    const go=d=>{imgs[idx].classList.remove('show');dots[idx].classList.remove('on');
+      idx=(idx+d+imgs.length)%imgs.length;
+      imgs[idx].classList.add('show');dots[idx].classList.add('on');};
+    g.querySelector('.next').onclick=e=>{e.stopPropagation();go(1);};
+    g.querySelector('.prev').onclick=e=>{e.stopPropagation();go(-1);};
+  });
+}
+
+function renderPager(pages){
+  const p=$('#pager'); if(pages<=1){p.innerHTML='';return;}
+  let html=`<button ${state.page===1?'disabled':''} data-p="${state.page-1}">‹</button>`;
+  const win=[]; for(let i=1;i<=pages;i++){if(i===1||i===pages||Math.abs(i-state.page)<=1)win.push(i);}
+  let last=0;
+  win.forEach(i=>{ if(i-last>1)html+=`<button disabled>…</button>`;
+    html+=`<button class="${i===state.page?'on':''}" data-p="${i}">${i}</button>`; last=i;});
+  html+=`<button ${state.page===pages?'disabled':''} data-p="${state.page+1}">›</button>`;
+  p.innerHTML=html;
+  p.querySelectorAll('button[data-p]').forEach(b=>b.onclick=()=>{
+    state.page=+b.dataset.p; apply(); window.scrollTo({top:0,behavior:'smooth'});
+  });
+}
+</script>
+</body>
+</html>
